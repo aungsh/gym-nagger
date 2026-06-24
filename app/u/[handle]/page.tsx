@@ -56,7 +56,10 @@ export default async function UserPage({ params }: Props) {
   return (
     <div className="min-h-screen flex flex-col">
       <header className="px-6 py-5 md:px-12 max-w-5xl mx-auto w-full flex items-center justify-between">
-        <Link href="/" className="text-sm font-semibold tracking-tight">GymNag</Link>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-sm font-semibold tracking-tight">GymNag</Link>
+          <Link href="/leaderboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
+        </div>
         <span className="text-xs text-muted-foreground font-mono">@gym_nagger_bot</span>
       </header>
 

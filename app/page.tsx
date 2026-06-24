@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Separator } from '@/components/ui/separator'
+import Link from 'next/link'
 
 export default function HomePage() {
   const [handle, setHandle] = useState('')
@@ -51,7 +52,10 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
       <header className="px-6 py-5 md:px-12 max-w-5xl mx-auto w-full flex items-center justify-between">
-        <span className="text-sm font-semibold tracking-tight">GymNag</span>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="text-sm font-semibold tracking-tight">GymNag</Link>
+          <Link href="/leaderboard" className="text-sm font-semibold text-muted-foreground hover:text-foreground transition-colors">Leaderboard</Link>
+        </div>
         <span className="text-xs text-muted-foreground font-mono">@gym_nagger_bot</span>
       </header>
 
