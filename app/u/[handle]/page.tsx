@@ -5,6 +5,8 @@ import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import DotCalendar from '@/components/DotCalendar'
 
+export const dynamic = 'force-dynamic'
+
 interface Props {
   params: Promise<{ handle: string }>
 }
@@ -53,12 +55,12 @@ export default async function UserPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="flex items-center justify-between px-6 py-5 md:px-12">
+      <header className="px-6 py-5 md:px-12 max-w-5xl mx-auto w-full flex items-center justify-between">
         <Link href="/" className="text-sm font-semibold tracking-tight">GymNag</Link>
         <span className="text-xs text-muted-foreground font-mono">@gym_nagger_bot</span>
       </header>
 
-      <main className="flex-1 px-6 md:px-12 pb-24">
+      <main className="flex-1 px-6 md:px-12 pb-24 max-w-5xl mx-auto w-full">
         <div className="pt-8 pb-12">
           <Link href="/" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-mono">
             back
@@ -134,8 +136,10 @@ export default async function UserPage({ params }: Props) {
         </section>
       </main>
 
-      <footer className="px-6 md:px-12 py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">Free. Runs on Telegram + Vercel. No account needed.</p>
+      <footer className="border-t border-border">
+        <div className="px-6 md:px-12 py-6 max-w-5xl mx-auto w-full">
+          <p className="text-xs text-muted-foreground">Free. Runs on Telegram + Vercel. No account needed.</p>
+        </div>
       </footer>
     </div>
   )

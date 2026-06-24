@@ -50,12 +50,12 @@ export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Nav */}
-      <header className="flex items-center justify-between px-6 py-5 md:px-12">
+      <header className="px-6 py-5 md:px-12 max-w-5xl mx-auto w-full flex items-center justify-between">
         <span className="text-sm font-semibold tracking-tight">GymNag</span>
         <span className="text-xs text-muted-foreground font-mono">@gym_nagger_bot</span>
       </header>
 
-      <main className="flex-1 px-6 md:px-12 pb-24">
+      <main className="flex-1 px-6 md:px-12 pb-24 max-w-5xl mx-auto w-full">
 
         {/* Hero */}
         <section className="pt-20 pb-16 max-w-2xl">
@@ -167,7 +167,7 @@ export default function HomePage() {
         <Separator className="mb-16" />
 
         {/* How it works */}
-        <section className="max-w-2xl">
+        <section className="max-w-2xl pb-16">
           <h2 className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-8">
             How it works
           </h2>
@@ -305,10 +305,12 @@ export default function HomePage() {
         </section>
       </main>
 
-      <footer className="px-6 md:px-12 py-6 border-t border-border">
-        <p className="text-xs text-muted-foreground">
-          Free. Runs on Telegram + Vercel. No account needed.
-        </p>
+      <footer className="border-t border-border">
+        <div className="px-6 md:px-12 py-6 max-w-5xl mx-auto w-full">
+          <p className="text-xs text-muted-foreground">
+            Free. Runs on Telegram + Vercel. No account needed.
+          </p>
+        </div>
       </footer>
     </div>
   )
