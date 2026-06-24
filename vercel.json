@@ -1,8 +1,16 @@
 {
   "crons": [
     {
-      "path": "/api/cron/nag?key=cron_k9mXpQ3rLvN8wZ2t4YjF",
+      "path": "/api/cron/nag?key=cron_k9mXpQ3rLvN8wZ2t4YjF&period=morning",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/nag?key=cron_k9mXpQ3rLvN8wZ2t4YjF&period=afternoon",
       "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/nag?key=cron_k9mXpQ3rLvN8wZ2t4YjF&period=evening",
+      "schedule": "0 12 * * *"
     }
   ]
 }

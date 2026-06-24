@@ -11,6 +11,12 @@ export default function HomePage() {
   const [error, setError] = useState('')
   const [searchHandle, setSearchHandle] = useState('')
 
+  // Test panel state
+  const [testHandle, setTestHandle] = useState('')
+  const [testLogText, setTestLogText] = useState('')
+  const [testStatus, setTestStatus] = useState('')
+  const [testLoading, setTestLoading] = useState(false)
+
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault()
     setError('')
@@ -178,6 +184,124 @@ export default function HomePage() {
               </li>
             ))}
           </ol>
+        </section>
+
+        <Separator className="mb-16" />
+
+        {/* Dev test panel */}
+        <section className="max-w-2xl pb-4">
+          <h2 className="text-xs text-muted-foreground font-mono uppercase tracking-widest mb-2">
+            Test panel
+          </h2>
+          <p className="text-xs text-muted-foreground mb-8">
+            Only works while the bot is registered and the user has completed setup.
+          </p>
+
+          <div className="space-y-6">
+            {/* Send test nag */}
+            <div>
+              <p className="text-xs text-muted-foreground font-mono mb-3">Send a nag (fires Skip/Start buttons in Telegram)</p>
+              <form
+                onSubmit={async e => {
+                  e.preventDefault()
+                  setTestLoading(true)
+                  setTestStatus('')
+                  const res = await fetch('/api/test/nag', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ handle: testHandle }),
+                  })
+                  const data = await res.json()
+                  setTestStatus(res.ok ? `Sent to ${data.sent_to}` : data.error)
+                  setTestLoading(false)
+                }}
+                className="flex gap-3 max-w-sm"
+              >
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none">@</span>
+                  <Input
+                    id="test-nag-handle"
+                    type="text"
+                    value={testHandle}
+                    onChange={e => setTestHandle(e.target.value)}
+                    placeholder="yourhandle"
+                    className="pl-7 bg-muted border-border h-10 text-sm"
+                    required
+                  />
+                </div>
+                <button
+                  id="test-nag-btn"
+                  type="submit"
+                  disabled={testLoading}
+                  className="px-4 h-10 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {testLoading ? '...' : 'Send nag'}
+                </button>
+              </form>
+            </div>
+
+            {/* Log activity */}
+            <div>
+              <p className="text-xs text-muted-foreground font-mono mb-3">Manually log a gym activity (skips the bot)</p>
+              <form
+                onSubmit={async e => {
+                  e.preventDefault()
+                  setTestLoading(true)
+                  setTestStatus('')
+                  const res = await fetch('/api/test/log', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ handle: testHandle, text: testLogText }),
+                  })
+                  const data = await res.json()
+                  setTestStatus(res.ok ? `Logged. New streak: ${data.streak}` : data.error)
+                  setTestLogText('')
+                  setTestLoading(false)
+                }}
+                className="space-y-3"
+              >
+                <div className="flex gap-3 max-w-sm">
+                  <div className="relative flex-1">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm select-none">@</span>
+                    <Input
+                      id="test-log-handle"
+                      type="text"
+                      value={testHandle}
+                      onChange={e => setTestHandle(e.target.value)}
+                      placeholder="yourhandle"
+                      className="pl-7 bg-muted border-border h-10 text-sm"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="flex gap-3 max-w-sm">
+                  <Input
+                    id="test-log-text"
+                    type="text"
+                    value={testLogText}
+                    onChange={e => setTestLogText(e.target.value)}
+                    placeholder="e.g. chest day, 3 sets bench press"
+                    className="bg-muted border-border h-10 text-sm flex-1"
+                    required
+                  />
+                  <button
+                    id="test-log-btn"
+                    type="submit"
+                    disabled={testLoading}
+                    className="px-4 h-10 rounded-lg border border-border text-sm font-medium hover:bg-muted transition-colors cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                  >
+                    {testLoading ? '...' : 'Log it'}
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {testStatus && (
+              <p className={`text-xs font-mono ${testStatus.startsWith('Sent') || testStatus.startsWith('Logged') ? 'text-accent' : 'text-destructive'}`}>
+                {testStatus}
+              </p>
+            )}
+          </div>
         </section>
       </main>
 

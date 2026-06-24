@@ -1,6 +1,6 @@
 -- ============================================================
--- Gym Nag Bot — initial schema
--- Paste this into Supabase SQL Editor and click "Run"
+-- Gym Nag Bot — schema (drop & recreate if already run)
+-- Paste into Supabase SQL Editor and click Run
 -- ============================================================
 
 create extension if not exists "pgcrypto";
@@ -21,8 +21,9 @@ create table if not exists users (
   handle        text unique not null,
   display_name  text,
   created_at    timestamptz not null default now(),
-  nag_hour_utc  int not null default 14,
-  streak        int not null default 0
+  streak        int not null default 0,
+  gym_days      int[] not null default '{}',   -- 0=Sun 1=Mon 2=Tue 3=Wed 4=Thu 5=Fri 6=Sat
+  bot_state     text not null default 'setup'  -- 'setup' | 'idle' | 'waiting_workout'
 );
 
 create unique index if not exists users_telegram_id_idx on users(telegram_id);
@@ -32,8 +33,8 @@ create unique index if not exists users_handle_idx on users(lower(handle));
 create table if not exists logs (
   id              uuid primary key default gen_random_uuid(),
   user_id         uuid not null references users(id) on delete cascade,
-  raw_text        text not null,
-  parsed_summary  text,
+  status          text not null default 'completed',  -- 'completed' | 'skipped'
+  raw_text        text,                               -- null for skipped days
   logged_at       timestamptz not null default now()
 );
 
