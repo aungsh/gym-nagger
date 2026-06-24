@@ -1,5 +1,5 @@
 -- ============================================================
--- Gym Nag Bot — schema (drop & recreate if already run)
+-- Gym Nag Bot — schema update
 -- Paste into Supabase SQL Editor and click Run
 -- ============================================================
 
@@ -26,6 +26,12 @@ create table if not exists users (
   bot_state     text not null default 'setup'  -- 'setup' | 'idle' | 'waiting_workout'
 );
 
+-- If the table already existed, the above CREATE TABLE did nothing. 
+-- We need to manually add the new columns:
+alter table users add column if not exists streak int not null default 0;
+alter table users add column if not exists gym_days int[] not null default '{}';
+alter table users add column if not exists bot_state text not null default 'setup';
+
 create unique index if not exists users_telegram_id_idx on users(telegram_id);
 create unique index if not exists users_handle_idx on users(lower(handle));
 
@@ -37,6 +43,8 @@ create table if not exists logs (
   raw_text        text,                               -- null for skipped days
   logged_at       timestamptz not null default now()
 );
+
+alter table logs add column if not exists status text not null default 'completed';
 
 create index if not exists logs_user_id_idx on logs(user_id);
 create index if not exists logs_logged_at_idx on logs(logged_at desc);
