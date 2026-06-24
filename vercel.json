@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/nag?key=cron_k9mXpQ3rLvN8wZ2t4YjF",
+      "schedule": "0 6 * * *"
+    }
+  ]
+}
