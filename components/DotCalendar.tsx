@@ -1,6 +1,11 @@
 'use client'
 
 import { useRef, useEffect } from 'react'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface LogEntry {
   logged_at: string
@@ -11,6 +16,8 @@ interface LogEntry {
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
 
 export default function DotCalendar({ logs }: { logs: LogEntry[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
   // Map date string → log entry
   const byDay: Record<string, LogEntry> = {}
   for (const log of logs) {
@@ -19,15 +26,25 @@ export default function DotCalendar({ logs }: { logs: LogEntry[] }) {
     if (!byDay[day]) byDay[day] = log // keep first entry if multiple
   }
 
-  // Build 52 weeks ending today
+  // Build weeks in plain chronological order: oldest week first (index 0,
+  // left side), today's week last (right side) — exactly like GitHub.
   const today = new Date()
   today.setHours(0, 0, 0, 0)
+  const todayIso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
+  // Go back 52 weeks (364 days) from today, then snap back to that week's
+  // Sunday so rows stay aligned to Sun..Sat.
   const start = new Date(today)
-  start.setDate(start.getDate() - start.getDay() - 51 * 7)
+  start.setDate(start.getDate() - 51 * 7)
+  start.setDate(start.getDate() - start.getDay())
+
+  // Days from that Sunday through today (inclusive) → number of weeks,
+  // where the final week may be a partial column (today might not be Saturday).
+  const totalDays = Math.round((today.getTime() - start.getTime()) / 86400000) + 1
+  const numWeeks = Math.ceil(totalDays / 7)
 
   const weeks: { date: Date; iso: string }[][] = []
-  for (let w = 0; w < 52; w++) {
+  for (let w = 0; w < numWeeks; w++) {
     const week: { date: Date; iso: string }[] = []
     for (let d = 0; d < 7; d++) {
       const day = new Date(start)
@@ -38,16 +55,16 @@ export default function DotCalendar({ logs }: { logs: LogEntry[] }) {
     weeks.push(week)
   }
 
-  // Month labels
+  // Month labels (chronological order, same indices as `weeks`)
   const monthLabels: { label: string; col: number }[] = []
   let lastMonth = -1
   weeks.forEach((week, col) => {
     const m = week[0].date.getMonth()
-    if (m !== lastMonth) { 
+    if (m !== lastMonth) {
       if (monthLabels.length === 0 || col - monthLabels[monthLabels.length - 1].col >= 3) {
         monthLabels.push({ label: MONTHS[m], col })
       }
-      lastMonth = m 
+      lastMonth = m
     }
   })
 
@@ -66,49 +83,65 @@ export default function DotCalendar({ logs }: { logs: LogEntry[] }) {
     return `${iso}: ${entry.raw_text ?? ''}`
   }
 
-  return (
-    <div className="overflow-hidden flex-col justify-end pb-4">
-      <div className="inline-block min-w-max flex-shrink-0">
-        {/* Month labels */}
-        <div className="flex mb-2" style={{ marginLeft: '14px' }}>
-          {weeks.map((_, col) => {
-            const lbl = monthLabels.find(m => m.col === col)
-            return (
-              <div key={col} className="w-[12px] mr-1 text-[10px] text-muted-foreground font-mono shrink-0">
-                {lbl?.label ?? ''}
-              </div>
-            )
-          })}
-        </div>
+  // On mount (and whenever the log count changes), scroll the grid all the
+  // way to the right so "today" is in view without the user needing to
+  // scroll manually.
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollLeft = scrollRef.current.scrollWidth
+    }
+  }, [logs.length])
 
-        <div className="flex gap-1">
-          {/* Day labels */}
-          <div className="flex flex-col gap-1 mr-1">
-            {['', 'M', '', 'W', '', 'F', ''].map((d, i) => (
-              <div
-                key={i}
-                className="text-[10px] text-muted-foreground font-mono w-[12px] h-[12px] flex items-center justify-center leading-none"
-              >
-                {d}
+  return (
+    <div className="flex-col justify-end pb-4">
+      <div ref={scrollRef} className="overflow-x-auto">
+        <div className="inline-block min-w-max flex-shrink-0">
+          {/* Month labels */}
+          <div className="flex mb-2" style={{ marginLeft: '14px' }}>
+            {weeks.map((_, col) => {
+              const lbl = monthLabels.find(m => m.col === col)
+              return (
+                <div key={col} className="w-[12px] mr-1 text-[10px] text-muted-foreground font-mono shrink-0">
+                  {lbl?.label ?? ''}
+                </div>
+              )
+            })}
+          </div>
+
+          <div className="flex gap-1">
+            {/* Day labels */}
+            <div className="flex flex-col gap-1 mr-1">
+              {['', 'M', '', 'W', '', 'F', ''].map((d, i) => (
+                <div
+                  key={i}
+                  className="text-[10px] text-muted-foreground font-mono w-[12px] h-[12px] flex items-center justify-center leading-none"
+                >
+                  {d}
+                </div>
+              ))}
+            </div>
+
+            {/* Dot grid — chronological, oldest left, today rightmost */}
+            {weeks.map((week, wi) => (
+              <div key={wi} className="flex flex-col gap-1">
+                {week.map(({ iso }) => {
+                  const isFuture = iso > todayIso
+                  return (
+                    <Tooltip key={iso}>
+                      <TooltipTrigger>
+                        <div
+                          className={`w-[12px] h-[12px] rounded-[2px] transition-opacity hover:opacity-70 ${dotColor(iso, isFuture)}`}
+                        />
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="font-mono text-xs">
+                        {dotTitle(iso)}
+                      </TooltipContent>
+                    </Tooltip>
+                  )
+                })}
               </div>
             ))}
           </div>
-
-          {/* Dot grid */}
-          {weeks.map((week, wi) => (
-            <div key={wi} className="flex flex-col gap-1">
-              {week.map(({ iso, date }) => {
-                const isFuture = date > today
-                return (
-                  <div
-                    key={iso}
-                    title={dotTitle(iso)}
-                    className={`w-[12px] h-[12px] rounded-[2px] transition-opacity hover:opacity-70 ${dotColor(iso, isFuture)}`}
-                  />
-                )
-              })}
-            </div>
-          ))}
         </div>
       </div>
 
